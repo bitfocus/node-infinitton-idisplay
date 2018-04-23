@@ -1,12 +1,11 @@
 {
-  "name": "elgato-stream-deck",
-  "version": "2.1.1",
+  "name": "elgato-stream-deck-clean",
+  "version": "1.0.0",
   "description": "An npm module for interfacing with the Elgato Stream Deck",
   "main": "index.js",
   "typings": "typings.d.ts",
   "dependencies": {
-    "node-hid": "^0.6.0",
-    "sharp": "^0.20.0"
+    "node-hid": "^0.6.0"
   },
   "devDependencies": {
     "ava": "^0.23.0",
@@ -37,7 +36,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Lange/node-elgato-stream-deck.git"
+    "url": "git+https://github.com/bitfocus/node-elgato-stream-deck.git"
   },
   "keywords": [
     "elgato",
@@ -58,6 +57,10 @@
   },
   "contributors": [
     {
+      "name": "Håkon Nessjøen",
+      "email": "haakon@bitfocus.io"
+    },
+    {
       "name": "Richard Fox",
       "twitter": "ProbablePrime"
     },
@@ -70,9 +73,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Lange/node-elgato-stream-deck/issues"
+    "url": "https://github.com/bitfocus/node-elgato-stream-deck/issues"
   },
-  "homepage": "https://github.com/Lange/node-elgato-stream-deck#readme",
+  "homepage": "https://github.com/bitfocus/node-elgato-stream-deck#readme",
   "eslintConfig": {
     "extends": "xo/esnext"
   },

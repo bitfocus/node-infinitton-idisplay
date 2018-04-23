@@ -1,51 +1,19 @@
-# elgato-stream-deck [![npm version](https://img.shields.io/npm/v/elgato-stream-deck.svg)](https://npm.im/elgato-stream-deck) [![license](https://img.shields.io/npm/l/elgato-stream-deck.svg)](https://npm.im/elgato-stream-deck) [![Travis](https://travis-ci.org/Lange/node-elgato-stream-deck.svg?branch=master)](https://travis-ci.org/Lange/node-elgato-stream-deck) [![Coverage Status](https://coveralls.io/repos/github/Lange/node-elgato-stream-deck/badge.svg?branch=master)](https://coveralls.io/github/Lange/node-elgato-stream-deck?branch=master) [![Join the chat at https://gitter.im/node-elgato-stream-deck/Lobby](https://badges.gitter.im/node-elgato-stream-deck/Lobby.svg)](https://gitter.im/node-elgato-stream-deck/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# elgato-stream-deck-clean
 
-![alt text](media/streamdeck_ui.png "elgato-stream-deck")
+![alt text](media/streamdeck_ui.png "elgato-stream-deck-clean")
 
-[`elgato-stream-deck`](https://github.com/lange/elgato-stream-deck) is a Node.js library for interfacing
+[`elgato-stream-deck-clean`](https://github.com/bitfocus/elgato-stream-deck) is a Node.js library for interfacing
 with the [Elgato Stream Deck](https://www.elgato.com/en/gaming/stream-deck).
 
 > ❗ Please note that `node-elgato-stream-deck` is NOT a standalone application. It is not something you download and run on its own. It is not an alternative to the [official Stream Deck program provided by Elgato](https://www.elgato.com/en/gaming/downloads). Instead, `node-elgato-stream-deck` is a code library, which developers can use to make their own applications which interface with the Stream Deck.
 
+## Custom version
+
+This is a modified version of [`elgato-stream-deck`](https://github.com/lange/elgato-stream-deck) that does not have dependencies to image libraries. That way the end-application can use its own libraries, so the dependencies stay at a minimum.
+
 ## Install
 
-`$ npm install --save elgato-stream-deck`
-
-All of this library's native dependencies ship with prebuilt binaries, so having a full compiler toolchain should not be necessary to install `node-elgato-stream-deck`.
-
-However, in the event that installation _does_ fail (**or if you are on a platform that our dependencies don't provide prebuilt binaries for, such as a Raspberry Pi**), you will need to install a compiler toolchain to enable npm to build some of `node-elgato-stream-deck`'s dependencies from source. Expand the details block below for full instructions on how to do so.
-
-<details>
-	<summary>Compiling dependencies from source</summary>
-	
-* Windows
-  * Install [`windows-build-tools`](https://github.com/felixrieseberg/windows-build-tools):
-  ```bash
-  npm install --global windows-build-tools
-  ```
-* MacOS
-  * Install the Xcode Command Line Tools:
-  ```bash
-  xcode-select --install
-  ```
-* Linux (**including Raspberry Pi**)
-  * Follow the instructions for Linux in the ["Compiling from source"](https://github.com/node-hid/node-hid#compiling-from-source) steps for `node-hid`:
-	```bash
-	sudo apt-get install build-essential git
-	sudo apt-get install gcc-4.8 g++-4.8 && export CXX=g++-4.8
-	sudo apt-get install sudo apt install libusb-1.0-0 libusb-1.0-0-dev
-	```
-  * Install a recent version of Node.js.:
-	```bash
-	curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-	sudo apt-get install -y nodejs 
-	```
-  * Try installing `node-elgato-stream-deck`
-  * If you still have issues, ensure everything is updated and try again:
-	```bash
-	sudo apt-get update && sudo apt-get upgrade
-	```
-</details>
+`$ npm install --save elgato-stream-deck-clean`
 
 ## Table of Contents
 
@@ -56,9 +24,7 @@ However, in the event that installation _does_ fail (**or if you are on a platfo
 * [API](#api)
   * [`write`](#write)
   * [`fillColor`](#fill-color)
-  * [`fillImageFromFile`](#fill-image-from-file)
   * [`fillImage`](#fill-image)
-  * [`fillPanel`](#fill-panel)
   * [`clearKey`](#clear-key)
   * [`clearAllKeys`](#clear-all-keys)
   * [`setBrightness`](#set-brightness)
@@ -97,12 +63,6 @@ myStreamDeck.on('error', error => {
 	console.error(error);
 });
 
-// Fill the second button from the left in the first row with an image of the GitHub logo.
-// This is asynchronous and returns a promise.
-myStreamDeck.fillImageFromFile(3, path.resolve(__dirname, 'github_logo.png')).then(() => {
-	console.log('Successfully wrote a GitHub logo to key 3.');
-});
-
 // Fill the first button form the left in the first row with a solid red color. This is synchronous.
 myStreamDeck.fillColor(4, 255, 0, 0);
 console.log('Successfully wrote a red square to key 4.');
@@ -138,14 +98,6 @@ myStreamDeck.on('error', error => {
 * Set the Stream Deck brightness
 * TypeScript support
 
-### Planned Features
-
-* [Hotplugging](https://github.com/Lange/node-elgato-stream-deck/issues/14)
-* [Key combinations](https://github.com/Lange/node-elgato-stream-deck/issues/9)
-* Support "pages" feature from the official Elgato Stream Deck software
-* [Text labels](https://github.com/Lange/node-elgato-stream-deck/issues/6)
-* [Changing the standby image](https://github.com/Lange/node-elgato-stream-deck/issues/11)
-
 ### Contributing
 
 The elgato-stream-deck team enthusiastically welcomes contributions and project participation! There's a bunch of things you can do if you want to contribute! The [Contributor Guide](CONTRIBUTING.md) has all the information you need for everything from reporting bugs to contributing entire new features. Please don't hesitate to jump in if you'd like to, or even ask us questions if something isn't clear.
@@ -179,25 +131,6 @@ Synchronously sets the given `keyIndex`'s screen to a solid RGB color.
 streamDeck.fillColor(4, 255, 0, 0);
 ```
 
-#### <a name="fill-image-from-file"></a> `> streamDeck.fillImageFromFile(keyIndex, filePath) -> Promise`
-
-Asynchronously reads an image from `filePath` and sets the given `keyIndex`'s screen to that image.
-Automatically scales the image to 72x72 and strips out the alpha channel.
-If necessary, the image will be center-cropped to fit into a square.
-
-##### Example
-
-```javascript
-// Fill the second button from the left in the first row with an image of the GitHub logo.
-streamDeck.fillImageFromFile(3, path.resolve(__dirname, 'github_logo.png'))
-	.then(() => {
-		console.log('Successfully wrote a GitHub logo to key 3.');
-	})
-	.catch(err => {
-		console.error(err);
-	});
-```
-
 #### <a name="fill-image"></a> `> streamDeck.fillImage(keyIndex, buffer) -> undefined`
 
 Synchronously writes a buffer of 72x72 RGB image data to the given `keyIndex`'s screen.
@@ -215,25 +148,6 @@ sharp(path.resolve(__dirname, 'github_logo.png'))
 	.toBuffer()
 	.then(buffer => {
 		return streamDeck.fillImage(2, buffer);
-	})
-	.catch(err => {
-		console.error(err);
-	});
-```
-
-#### <a name="fill-panel"></a> `> streamDeck.fillPanel(imagePathOrBuffer[, sharpOptions]) -> Promise`
-
-Asynchronously applies an image to the entire panel, spreading it over all keys. The image is scaled down and center-cropped to fit. This method does not currently account for the gaps between keys, and behaves as if each key was directly connected to its neighbors. If you wish to account for the gaps between keys, you'll need to do so via other means, and bake that into the image you provide to `fillPanel`.
-
-This method accepts either a path to an image on the disk, or a buffer. The image path or buffer is passed directly to [`sharp`](https://github.com/lovell/sharp). Therefore, this method accepts all images and buffers which `sharp` can accept.
-
-##### Example
-
-```javascript
-// Fill the entire panel with a photo of a sunny field.
-streamDeck.fillPanel(path.resolve(__dirname, 'examples/fixtures/sunny_field.png'))
-	.then(() => {
-		console.log('Successfully filled the panel with an image.');
 	})
 	.catch(err => {
 		console.error(err);
