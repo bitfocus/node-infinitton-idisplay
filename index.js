@@ -7,15 +7,11 @@ const EventEmitter = require('events');
 const HID = require('node-hid');
 
 const NUM_KEYS = 15;
-const PAGE_PACKET_SIZE = 8191;
-const NUM_FIRST_PAGE_PIXELS = 2583;
-const NUM_SECOND_PAGE_PIXELS = 2601;
+const PAGE_PACKET_SIZE = 8017;
 const ICON_SIZE = 72;
-const NUM_TOTAL_PIXELS = NUM_FIRST_PAGE_PIXELS + NUM_SECOND_PAGE_PIXELS;
-// Commented: const NUM_BUTTON_COLUMNS = 5;
-// Commented: const NUM_BUTTON_ROWS = 3;
+const NUM_TOTAL_PIXELS = 72*72*3;
 
-class StreamDeck extends EventEmitter {
+class Infinitton extends EventEmitter {
 	/**
 	 * The pixel size of an icon written to the Stream Deck key.
 	 *
@@ -38,7 +34,7 @@ class StreamDeck extends EventEmitter {
 	}
 
 	/**
-	 * Checks a keyIndex is a valid key for a stream deck. A number between 0 and 14.
+	 * Checks a keyIndex is a valid key for a device. A number between 0 and 14.
 	 *
 	 * @static
 	 * @param {number} keyIndex The keyIndex to check
@@ -58,7 +54,7 @@ class StreamDeck extends EventEmitter {
 	 * @returns {Buffer} The Buffer padded to the length requested
 	 */
 	static padBufferToLength(buffer, padLength) {
-		return Buffer.concat([buffer, StreamDeck.createPadBuffer(padLength - buffer.length)]);
+		return Buffer.concat([buffer, Infinitton.createPadBuffer(padLength - buffer.length)]);
 	}
 
 	/**
@@ -90,40 +86,64 @@ class StreamDeck extends EventEmitter {
 
 	constructor(devicePath) {
 		super();
+		var self = this;
 
 		if (typeof devicePath === 'undefined') {
 			// Device path not provided, will then select any connected device.
 			const devices = HID.devices();
-			const connectedStreamDecks = devices.filter(device => {
-				return device.vendorId === 0x0fd9 && device.productId === 0x0060;
+			const connectedInfinittons = devices.filter(device => {
+				return device.vendorId === 0xffff && device.productId === 0x1f40;
 			});
-			if (!connectedStreamDecks.length) {
-				throw new Error('No Stream Decks are connected.');
+			if (!connectedInfinittons.length) {
+				throw new Error('No Infinittons are connected.');
 			}
-			this.device = new HID.HID(connectedStreamDecks[0].path);
+			this.device = new HID.HID(connectedInfinittons[0].path);
 		} else {
 			this.device = new HID.HID(devicePath);
 		}
 
 		this.keyState = new Array(NUM_KEYS).fill(false);
 
+		function keyIsPressed(keyIndex, keyPressed) {
+			const stateChanged = keyPressed !== self.keyState[keyIndex];
+			if (stateChanged) {
+				self.keyState[keyIndex] = keyPressed;
+				if (keyPressed) {
+					console.log("KEYPRESS: ", keyIndex);
+					self.emit('down', keyIndex);
+				} else {
+					self.emit('up', keyIndex);
+				}
+			}
+		}
+
 		this.device.on('data', data => {
+
+			console.log("DATA FROM infinitton; ", data);
 			// The first byte is a report ID, the last byte appears to be padding.
 			// We strip these out for now.
 			data = data.slice(1, data.length - 1);
 
-			for (let i = 0; i < NUM_KEYS; i++) {
-				const keyPressed = Boolean(data[i]);
-				const stateChanged = keyPressed !== this.keyState[i];
-				if (stateChanged) {
-					this.keyState[i] = keyPressed;
-					if (keyPressed) {
-						this.emit('down', i);
-					} else {
-						this.emit('up', i);
-					}
-				}
-			}
+			// Row 1
+			keyIsPressed(4, data[0] & 0x10);
+			keyIsPressed(3, data[0] & 0x08);
+			keyIsPressed(2, data[0] & 0x04);
+			keyIsPressed(1, data[0] & 0x02);
+			keyIsPressed(0, data[0] & 0x01);
+
+			// Row 2
+			keyIsPressed(9, data[1] & 0x02);
+			keyIsPressed(8, data[1] & 0x01);
+			keyIsPressed(7, data[0] & 0x80);
+			keyIsPressed(6, data[0] & 0x40);
+			keyIsPressed(5, data[0] & 0x20);
+
+			// Row 3
+			keyIsPressed(14, data[1] & 0x40);
+			keyIsPressed(13, data[1] & 0x20);
+			keyIsPressed(12, data[1] & 0x20);
+			keyIsPressed(11, data[1] & 0x08);
+			keyIsPressed(10, data[1] & 0x04);
 		});
 
 		this.device.on('error', err => {
@@ -138,7 +158,7 @@ class StreamDeck extends EventEmitter {
 	 * @returns undefined
 	 */
 	write(buffer) {
-		return this.device.write(StreamDeck.bufferToIntArray(buffer));
+		return this.device.write(Infinitton.bufferToIntArray(buffer));
 	}
 
 	/**
@@ -148,7 +168,7 @@ class StreamDeck extends EventEmitter {
 	 * @returns undefined
 	 */
 	sendFeatureReport(buffer) {
-		return this.device.sendFeatureReport(StreamDeck.bufferToIntArray(buffer));
+		return this.device.sendFeatureReport(Infinitton.bufferToIntArray(buffer));
 	}
 
 	/**
@@ -160,15 +180,19 @@ class StreamDeck extends EventEmitter {
 	 * @param {number} b The color's blue value. 0 -255
 	 */
 	fillColor(keyIndex, r, g, b) {
-		StreamDeck.checkValidKeyIndex(keyIndex);
+		Infinitton.checkValidKeyIndex(keyIndex);
 
-		StreamDeck.checkRGBValue(r);
-		StreamDeck.checkRGBValue(g);
-		StreamDeck.checkRGBValue(b);
+		Infinitton.checkRGBValue(r);
+		Infinitton.checkRGBValue(g);
+		Infinitton.checkRGBValue(b);
 
 		const pixel = Buffer.from([b, g, r]);
-		this._writePage1(keyIndex, Buffer.alloc(NUM_FIRST_PAGE_PIXELS * 3, pixel));
-		this._writePage2(keyIndex, Buffer.alloc(NUM_SECOND_PAGE_PIXELS * 3, pixel));
+		this._writePage1(keyIndex, Buffer.alloc(7946, pixel));
+		// First page stops just before r
+		const pixel2 = Buffer.from([r, b, g]);
+		this._writePage2(keyIndex, Buffer.alloc(7606, pixel2));
+
+		this.device.sendFeatureReport([0, 0x12, 0x01, 0x00, 0x00, keyIndex + 1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
 	}
 
 	/**
@@ -178,7 +202,7 @@ class StreamDeck extends EventEmitter {
 	 * @param {Buffer} imageBuffer
 	 */
 	fillImage(keyIndex, imageBuffer) {
-		StreamDeck.checkValidKeyIndex(keyIndex);
+		Infinitton.checkValidKeyIndex(keyIndex);
 
 		if (imageBuffer.length !== 15552) {
 			throw new RangeError(`Expected image buffer of length 15552, got length ${imageBuffer.length}`);
@@ -197,10 +221,11 @@ class StreamDeck extends EventEmitter {
 			pixels = pixels.concat(row.reverse());
 		}
 
-		const firstPagePixels = pixels.slice(0, NUM_FIRST_PAGE_PIXELS * 3);
-		const secondPagePixels = pixels.slice(NUM_FIRST_PAGE_PIXELS * 3, NUM_TOTAL_PIXELS * 3);
+		const firstPagePixels = pixels.slice(0, 7946);
+		const secondPagePixels = pixels.slice(7946, NUM_TOTAL_PIXELS * 3);
 		this._writePage1(keyIndex, Buffer.from(firstPagePixels));
 		this._writePage2(keyIndex, Buffer.from(secondPagePixels));
+		this.device.sendFeatureReport([0, 0x12, 0x01, 0x00, 0x00, keyIndex+1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
 	}
 
 	/**
@@ -210,8 +235,8 @@ class StreamDeck extends EventEmitter {
 	 * @returns {undefined}
 	 */
 	clearKey(keyIndex) {
-		StreamDeck.checkValidKeyIndex(keyIndex);
-		return this.fillColor(keyIndex, 0, 0, 0);
+		Infinitton.checkValidKeyIndex(keyIndex);
+		return this.fillColor(keyIndex, 0x33, 0x66, 0x88);
 	}
 
 	/**
@@ -235,8 +260,8 @@ class StreamDeck extends EventEmitter {
 			throw new RangeError('Expected brightness percentage to be between 0 and 100');
 		}
 
-		const brightnessCommandBuffer = Buffer.from([0x05, 0x55, 0xaa, 0xd1, 0x01, percentage]);
-		this.sendFeatureReport(StreamDeck.padBufferToLength(brightnessCommandBuffer, 17));
+		const brightnessCommandBuffer = Buffer.from([0x00, 0x11, percentage]);
+		this.sendFeatureReport(brightnessCommandBuffer);
 	}
 
 	/**
@@ -249,18 +274,14 @@ class StreamDeck extends EventEmitter {
 	 */
 	_writePage1(keyIndex, buffer) {
 		const header = Buffer.from([
-			0x02, 0x01, 0x01, 0x00, 0x00, keyIndex + 1, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x42, 0x4d, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x36, 0x00, 0x00, 0x00, 0x28, 0x00,
-			0x00, 0x00, 0x48, 0x00, 0x00, 0x00, 0x48, 0x00,
-			0x00, 0x00, 0x01, 0x00, 0x18, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0xc0, 0x3c, 0x00, 0x00, 0xc4, 0x0e,
-			0x00, 0x00, 0xc4, 0x0e, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+			0x02, 0x00, 0x00, 0x00, 0x00, 0x40, 0x1f, 0x00, 0x00, 0x55, 0xaa, 0xaa, 0x55, 0x11, 0x22, 0x33,
+			0x44, 0x42, 0x4d, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x36, 0x00, 0x00, 0x00, 0x28,
+			0x00, 0x00, 0x00, 0x48, 0x00, 0x00, 0x00, 0x48, 0x00, 0x00, 0x00, 0x01, 0x00, 0x18, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0xc0, 0x3c, 0x00, 0x00, 0x13, 0x0b, 0x00, 0x00, 0x13, 0x0b, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 		]);
 
-		const packet = StreamDeck.padBufferToLength(Buffer.concat([header, buffer]), PAGE_PACKET_SIZE);
+		const packet = Infinitton.padBufferToLength(Buffer.concat([header, buffer]), PAGE_PACKET_SIZE);
 		return this.write(packet);
 	}
 
@@ -272,15 +293,15 @@ class StreamDeck extends EventEmitter {
 	 * @param {Buffer} buffer Image data for page 2
 	 * @returns {undefined}
 	 */
+
 	_writePage2(keyIndex, buffer) {
 		const header = Buffer.from([
-			0x02, 0x01, 0x02, 0x00, 0x01, keyIndex + 1, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+			0x02, 0x40, 0x1f, 0x00, 0x00, 0xb6, 0x1d, 0x00, 0x00, 0x55, 0xaa, 0xaa, 0x55, 0x11, 0x22, 0x33, 0x44
 		]);
 
-		const packet = StreamDeck.padBufferToLength(Buffer.concat([header, buffer]), PAGE_PACKET_SIZE);
+		const packet = Infinitton.padBufferToLength(Buffer.concat([header, buffer]), PAGE_PACKET_SIZE);
 		return this.write(packet);
 	}
 }
 
-module.exports = StreamDeck;
+module.exports = Infinitton;
