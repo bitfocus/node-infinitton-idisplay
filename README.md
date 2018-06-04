@@ -1,6 +1,6 @@
 # infinitton-idisplay
 
-[`infinitton-idisplay`](https://github.com/bitfocus/elgato-stream-deck#infinitton-idisplay) is a Node.js library for interfacing
+[`infinitton-idisplay`](https://github.com/bitfocus/node-elgato-stream-deck/tree/infinitton-idisplay) is a Node.js library for interfacing
 with the [Elgato Stream Deck](https://www.infinitton.com/).
 
 > ❗ Please note that `infinitton-idisplay` is NOT a standalone application. Instead, `infinitton-idevice` is a code library, which developers can use to make their own applications which interface with the Infinitton.
