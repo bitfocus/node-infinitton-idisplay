@@ -236,7 +236,7 @@ class Infinitton extends EventEmitter {
 	 */
 	clearKey(keyIndex) {
 		Infinitton.checkValidKeyIndex(keyIndex);
-		return this.fillColor(keyIndex, 0x33, 0x66, 0x88);
+		return this.fillColor(keyIndex, 0, 0, 0);
 	}
 
 	/**
