@@ -109,7 +109,6 @@ class Infinitton extends EventEmitter {
 			if (stateChanged) {
 				self.keyState[keyIndex] = keyPressed;
 				if (keyPressed) {
-					console.log("KEYPRESS: ", keyIndex);
 					self.emit('down', keyIndex);
 				} else {
 					self.emit('up', keyIndex);
@@ -119,31 +118,26 @@ class Infinitton extends EventEmitter {
 
 		this.device.on('data', data => {
 
-			console.log("DATA FROM infinitton; ", data);
-			// The first byte is a report ID, the last byte appears to be padding.
-			// We strip these out for now.
-			data = data.slice(1, data.length - 1);
-
 			// Row 1
-			keyIsPressed(4, data[0] & 0x10);
-			keyIsPressed(3, data[0] & 0x08);
-			keyIsPressed(2, data[0] & 0x04);
-			keyIsPressed(1, data[0] & 0x02);
-			keyIsPressed(0, data[0] & 0x01);
+			keyIsPressed(4, data[1] & 0x10);
+			keyIsPressed(3, data[1] & 0x08);
+			keyIsPressed(2, data[1] & 0x04);
+			keyIsPressed(1, data[1] & 0x02);
+			keyIsPressed(0, data[1] & 0x01);
 
 			// Row 2
-			keyIsPressed(9, data[1] & 0x02);
-			keyIsPressed(8, data[1] & 0x01);
-			keyIsPressed(7, data[0] & 0x80);
-			keyIsPressed(6, data[0] & 0x40);
-			keyIsPressed(5, data[0] & 0x20);
+			keyIsPressed(9, data[2] & 0x02);
+			keyIsPressed(8, data[2] & 0x01);
+			keyIsPressed(7, data[1] & 0x80);
+			keyIsPressed(6, data[1] & 0x40);
+			keyIsPressed(5, data[1] & 0x20);
 
 			// Row 3
-			keyIsPressed(14, data[1] & 0x40);
-			keyIsPressed(13, data[1] & 0x20);
-			keyIsPressed(12, data[1] & 0x20);
-			keyIsPressed(11, data[1] & 0x08);
-			keyIsPressed(10, data[1] & 0x04);
+			keyIsPressed(14, data[2] & 0x40);
+			keyIsPressed(13, data[2] & 0x20);
+			keyIsPressed(12, data[2] & 0x20);
+			keyIsPressed(11, data[2] & 0x08);
+			keyIsPressed(10, data[2] & 0x04);
 		});
 
 		this.device.on('error', err => {

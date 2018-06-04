@@ -40,6 +40,6 @@ myInfinitton.on('error', error => {
 });
 
 // Fill the first button form the left in the first row with a solid red color. This is synchronous.
-myStreamDeck.fillColor(4, 255, 0, 0);
+myInfinitton.fillColor(4, 255, 0, 0);
 console.log('Successfully wrote a red square to key 4.');
 ```
