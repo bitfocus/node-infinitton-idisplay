@@ -9,7 +9,7 @@ const HID = require('node-hid');
 const NUM_KEYS = 15;
 const PAGE_PACKET_SIZE = 8017;
 const ICON_SIZE = 72;
-const NUM_TOTAL_PIXELS = 72*72*3;
+const NUM_TOTAL_PIXELS = 72*72;
 
 class Infinitton extends EventEmitter {
 	/**
