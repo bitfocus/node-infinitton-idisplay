@@ -1,6 +1,6 @@
 {
   "name": "infinitton-idisplay",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "An npm module for interfacing with the Infinitton iDisplay",
   "main": "index.js",
   "dependencies": {

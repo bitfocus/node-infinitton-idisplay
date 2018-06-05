@@ -135,7 +135,7 @@ class Infinitton extends EventEmitter {
 			// Row 3
 			keyIsPressed(14, data[2] & 0x40);
 			keyIsPressed(13, data[2] & 0x20);
-			keyIsPressed(12, data[2] & 0x20);
+			keyIsPressed(12, data[2] & 0x10);
 			keyIsPressed(11, data[2] & 0x08);
 			keyIsPressed(10, data[2] & 0x04);
 		});
