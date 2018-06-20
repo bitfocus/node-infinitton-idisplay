@@ -13,7 +13,7 @@ const NUM_TOTAL_PIXELS = 72*72;
 
 class Infinitton extends EventEmitter {
 	/**
-	 * The pixel size of an icon written to the Stream Deck key.
+	 * The pixel size of an icon written to the Infinitton key.
 	 *
 	 * @readonly
 	 */
@@ -146,9 +146,9 @@ class Infinitton extends EventEmitter {
 	}
 
 	/**
-	 * Writes a Buffer to the Stream Deck.
+	 * Writes a Buffer to the Infinitton.
 	 *
-	 * @param {Buffer} buffer The buffer written to the Stream Deck
+	 * @param {Buffer} buffer The buffer written to the Infinitton
 	 * @returns undefined
 	 */
 	write(buffer) {
@@ -156,9 +156,9 @@ class Infinitton extends EventEmitter {
 	}
 
 	/**
-	 * Sends a HID feature report to the Stream Deck.
+	 * Sends a HID feature report to the Infinitton.
 	 *
-	 * @param {Buffer} buffer The buffer send to the Stream Deck.
+	 * @param {Buffer} buffer The buffer send to the Infinitton.
 	 * @returns undefined
 	 */
 	sendFeatureReport(buffer) {
@@ -219,7 +219,8 @@ class Infinitton extends EventEmitter {
 		const secondPagePixels = pixels.slice(7946, NUM_TOTAL_PIXELS * 3);
 		this._writePage1(keyIndex, Buffer.from(firstPagePixels));
 		this._writePage2(keyIndex, Buffer.from(secondPagePixels));
-		this.device.sendFeatureReport([0, 0x12, 0x01, 0x00, 0x00, keyIndex+1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+
+		this.device.sendFeatureReport([0, 0x12, 0x01, 0x00, 0x00, keyIndex + 1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
 	}
 
 	/**
@@ -245,7 +246,7 @@ class Infinitton extends EventEmitter {
 	}
 
 	/**
-	 * Sets the brightness of the keys on the Stream Deck
+	 * Sets the brightness of the keys on the Infinitton
 	 *
 	 * @param {number} percentage The percentage brightness
 	 */
@@ -259,7 +260,7 @@ class Infinitton extends EventEmitter {
 	}
 
 	/**
-	 * Writes a Stream Deck's page 1 headers and image data to the Stream Deck.
+	 * Writes Infinitton's page 1 headers and image data to the Infinitton.
 	 *
 	 * @private
 	 * @param {number} keyIndex The key to write to 0 - 14
@@ -280,7 +281,7 @@ class Infinitton extends EventEmitter {
 	}
 
 	/**
-	 * Writes a Stream Deck's page 2 headers and image data to the Stream Deck.
+	 * Writes Infinitton's page 2 headers and image data to the Infinitton.
 	 *
 	 * @private
 	 * @param {number} keyIndex The key to write to 0 - 14
