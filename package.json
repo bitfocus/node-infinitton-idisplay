@@ -1,38 +1,11 @@
 {
   "name": "elgato-stream-deck-clean",
-  "version": "1.0.0",
-  "description": "An npm module for interfacing with the Elgato Stream Deck",
+  "version": "1.0.1",
+  "description": "An npm module for interfacing with the Elgato Stream Deck. Without image library dependencies. (clean)",
   "main": "index.js",
   "typings": "typings.d.ts",
   "dependencies": {
-    "node-hid": "^0.6.0"
-  },
-  "devDependencies": {
-    "ava": "^0.23.0",
-    "coveralls": "^3.0.0",
-    "eslint": "^4.11.0",
-    "eslint-config-xo": "^0.19.0",
-    "eslint-plugin-ava": "^4.2.2",
-    "mockery": "^2.1.0",
-    "nyc": "^11.3.0",
-    "pureimage": "0.1.3",
-    "sinon": "^4.1.2",
-    "standard-version": "^4.2.0",
-    "stream-buffers": "^3.0.1",
-    "weallbehave": "^1.2.0",
-    "weallcontribute": "^1.0.8"
-  },
-  "scripts": {
-    "prerelease": "npm t",
-    "release": "standard-version",
-    "postrelease": "npm publish && git push --follow-tags",
-    "pretest": "npm run static",
-    "test": "nyc ava",
-    "report": "nyc report --reporter=html",
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "static": "eslint .",
-    "update-coc": "weallbehave -o . && git add CODE_OF_CONDUCT.md && git commit -m 'docs(coc): updated CODE_OF_CONDUCT.md'",
-    "update-contrib": "weallcontribute -o . && git add CONTRIBUTING.md && git commit -m 'docs(contributing): updated CONTRIBUTING.md'"
+    "node-hid": "^0.7.9"
   },
   "repository": {
     "type": "git",

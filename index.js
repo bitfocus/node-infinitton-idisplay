@@ -5,6 +5,7 @@ const EventEmitter = require('events');
 
 // Packages
 const HID = require('node-hid');
+HID.setDriverType('libusb');
 
 const NUM_KEYS = 15;
 const PAGE_PACKET_SIZE = 8191;
