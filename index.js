@@ -46,18 +46,6 @@ class Infinitton extends EventEmitter {
 		}
 	}
 
-	/**
-	 * Pads a given buffer till padLength with 0s.
-	 *
-	 * @private
-	 * @param {Buffer} buffer Buffer to pad
-	 * @param {number} padLength The length to pad to
-	 * @returns {Buffer} The Buffer padded to the length requested
-	 */
-	static padBufferToLength(buffer, padLength) {
-		return Buffer.concat([buffer, Buffer.alloc(padLength - buffer.length)]);
-	}
-
 	constructor(devicePath) {
 		super();
 		var self = this;
@@ -135,12 +123,7 @@ class Infinitton extends EventEmitter {
 		Infinitton.checkRGBValue(b);
 
 		const pixel = Buffer.from([b, g, r]);
-		this._writePage1(keyIndex, Buffer.alloc(7946, pixel));
-		// First page stops just before r
-		const pixel2 = Buffer.from([r, b, g]);
-		this._writePage2(keyIndex, Buffer.alloc(7606, pixel2));
-
-		this.device.sendFeatureReport([0, 0x12, 0x01, 0x00, 0x00, keyIndex + 1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+		this._writePixelData(keyIndex, Buffer.alloc(15552, pixel))
 	}
 
 	/**
@@ -156,25 +139,26 @@ class Infinitton extends EventEmitter {
 			throw new RangeError(`Expected image buffer of length 15552, got length ${imageBuffer.length}`);
 		}
 
-		let pixels = [];
-		for (let r = 0; r < ICON_SIZE; r++) {
-			const row = [];
-			const start = r * 3 * ICON_SIZE;
-			for (let i = start; i < start + (ICON_SIZE * 3); i += 3) {
-				const r = imageBuffer.readUInt8(i);
-				const g = imageBuffer.readUInt8(i + 1);
-				const b = imageBuffer.readUInt8(i + 2);
-				row.push(r, g, b);
+		const byteBuffer = Buffer.alloc(15552)
+		
+		for (let y = 0; y < 72; y++) {
+			const rowOffset = 72 * 3 * y
+			for (let x = 0; x < 72; x++) {
+				const x2 = 72 - x - 1
+				const srcOffset = rowOffset + x2 * 3
+
+				const red = imageBuffer.readUInt8(srcOffset)
+				const green = imageBuffer.readUInt8(srcOffset + 1)
+				const blue = imageBuffer.readUInt8(srcOffset + 2)
+
+				const targetOffset = rowOffset + x * 3
+				byteBuffer.writeUInt8(blue, targetOffset)
+				byteBuffer.writeUInt8(green, targetOffset + 1)
+				byteBuffer.writeUInt8(red, targetOffset + 2)
 			}
-			pixels = pixels.concat(row.reverse());
 		}
 
-		const firstPagePixels = pixels.slice(0, 7946);
-		const secondPagePixels = pixels.slice(7946, NUM_TOTAL_PIXELS * 3);
-		this._writePage1(keyIndex, Buffer.from(firstPagePixels));
-		this._writePage2(keyIndex, Buffer.from(secondPagePixels));
-
-		this.device.sendFeatureReport([0, 0x12, 0x01, 0x00, 0x00, keyIndex + 1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+		this._writePixelData(keyIndex, byteBuffer)
 	}
 
 	/**
@@ -185,7 +169,8 @@ class Infinitton extends EventEmitter {
 	 */
 	clearKey(keyIndex) {
 		Infinitton.checkValidKeyIndex(keyIndex);
-		return this.fillColor(keyIndex, 0, 0, 0);
+
+		this._writePixelData(keyIndex, Buffer.alloc(15552))
 	}
 
 	/**
@@ -194,8 +179,9 @@ class Infinitton extends EventEmitter {
 	 * returns {undefined}
 	 */
 	clearAllKeys() {
+		const buffer = Buffer.alloc(15552)
 		for (let keyIndex = 0; keyIndex < NUM_KEYS; keyIndex++) {
-			this.clearKey(keyIndex);
+			this._writePixelData(keyIndex, buffer)
 		}
 	}
 
@@ -211,6 +197,29 @@ class Infinitton extends EventEmitter {
 
 		const brightnessCommandBuffer = Buffer.from([0x00, 0x11, percentage]);
 		this.device.sendFeatureReport(brightnessCommandBuffer);
+	}
+
+	/**
+	 * Writes Infinitton's pixel data to the Infinitton.
+	 *
+	 * @private
+	 * @param {number} keyIndex The key to write to 0 - 14
+	 * @param {Buffer} buffer Image data for the button
+	 * @returns {undefined}
+	 */
+	_writePixelData(keyIndex, pixels) {
+		const firstPagePixels = pixels.slice(0, 7946);
+		const secondPagePixels = pixels.slice(7946, NUM_TOTAL_PIXELS * 3);
+		this._writePage1(keyIndex, firstPagePixels);
+		this._writePage2(keyIndex, secondPagePixels);
+
+		this.device.sendFeatureReport(Buffer.from([
+			0, 0x12, 0x01, 0x00, 0x00, keyIndex + 1, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0xf6, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00
+		]));
 	}
 
 	/**
@@ -230,7 +239,10 @@ class Infinitton extends EventEmitter {
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 		]);
 
-		const packet = Infinitton.padBufferToLength(Buffer.concat([header, buffer]), PAGE_PACKET_SIZE);
+		const packet = Buffer.alloc(PAGE_PACKET_SIZE)
+		header.copy(packet, 0)
+		buffer.copy(packet, header.length, 0, Math.min(PAGE_PACKET_SIZE - header.length, buffer.length))
+		
 		return this.device.write(packet);
 	}
 
@@ -248,7 +260,10 @@ class Infinitton extends EventEmitter {
 			0x02, 0x40, 0x1f, 0x00, 0x00, 0xb6, 0x1d, 0x00, 0x00, 0x55, 0xaa, 0xaa, 0x55, 0x11, 0x22, 0x33, 0x44
 		]);
 
-		const packet = Infinitton.padBufferToLength(Buffer.concat([header, buffer]), PAGE_PACKET_SIZE);
+		const packet = Buffer.alloc(PAGE_PACKET_SIZE)
+		header.copy(packet, 0)
+		buffer.copy(packet, header.length, 0, Math.min(PAGE_PACKET_SIZE - header.length, buffer.length))
+
 		return this.device.write(packet);
 	}
 }
