@@ -55,34 +55,7 @@ class Infinitton extends EventEmitter {
 	 * @returns {Buffer} The Buffer padded to the length requested
 	 */
 	static padBufferToLength(buffer, padLength) {
-		return Buffer.concat([buffer, Infinitton.createPadBuffer(padLength - buffer.length)]);
-	}
-
-	/**
-	 * Returns an empty buffer (filled with zeroes) of the given length
-	 *
-	 * @private
-	 * @param {number} padLength Length of the buffer
-	 * @returns {Buffer}
-	 */
-	static createPadBuffer(padLength) {
-		return Buffer.alloc(padLength);
-	}
-
-	/**
-	 * Converts a buffer into an number[]. Used to supply the underlying
-	 * node-hid device with the format it accepts.
-	 *
-	 * @static
-	 * @param {Buffer} buffer Buffer to convert
-	 * @returns {number[]} the converted buffer
-	 */
-	static bufferToIntArray(buffer) {
-		const array = [];
-		for (const pair of buffer.entries()) {
-			array.push(pair[1]);
-		}
-		return array;
+		return Buffer.concat([buffer, Buffer.alloc(padLength - buffer.length)]);
 	}
 
 	constructor(devicePath) {
@@ -144,26 +117,6 @@ class Infinitton extends EventEmitter {
 		this.device.on('error', err => {
 			this.emit('error', err);
 		});
-	}
-
-	/**
-	 * Writes a Buffer to the Infinitton.
-	 *
-	 * @param {Buffer} buffer The buffer written to the Infinitton
-	 * @returns undefined
-	 */
-	write(buffer) {
-		return this.device.write(Infinitton.bufferToIntArray(buffer));
-	}
-
-	/**
-	 * Sends a HID feature report to the Infinitton.
-	 *
-	 * @param {Buffer} buffer The buffer send to the Infinitton.
-	 * @returns undefined
-	 */
-	sendFeatureReport(buffer) {
-		return this.device.sendFeatureReport(Infinitton.bufferToIntArray(buffer));
 	}
 
 	/**
@@ -257,7 +210,7 @@ class Infinitton extends EventEmitter {
 		}
 
 		const brightnessCommandBuffer = Buffer.from([0x00, 0x11, percentage]);
-		this.sendFeatureReport(brightnessCommandBuffer);
+		this.device.sendFeatureReport(brightnessCommandBuffer);
 	}
 
 	/**
@@ -278,7 +231,7 @@ class Infinitton extends EventEmitter {
 		]);
 
 		const packet = Infinitton.padBufferToLength(Buffer.concat([header, buffer]), PAGE_PACKET_SIZE);
-		return this.write(packet);
+		return this.device.write(packet);
 	}
 
 	/**
@@ -296,7 +249,7 @@ class Infinitton extends EventEmitter {
 		]);
 
 		const packet = Infinitton.padBufferToLength(Buffer.concat([header, buffer]), PAGE_PACKET_SIZE);
-		return this.write(packet);
+		return this.device.write(packet);
 	}
 }
 
