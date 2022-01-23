@@ -1,14 +1,14 @@
 {
   "name": "infinitton-idisplay",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "An npm module for interfacing with the Infinitton buttons",
   "main": "index.js",
   "dependencies": {
-    "node-hid": "^0.7.9"
+    "node-hid": "^2.1.1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bitfocus/node-elgato-stream-deck.git#infinitton-idisplay"
+    "url": "git+https://github.com/bitfocus/node-infinitton-idisplay.git"
   },
   "keywords": [
     "infinitton",
@@ -39,17 +39,21 @@
       "twitter": "chrishanel",
       "email": "chrishanel@gmail.com",
       "url": "http://www.chrishanel.com/"
+    },
+    {
+      "name": "Julian Waller",
+      "email": "git@julusian.co.uk"
     }
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/bitfocus/node-elgato-stream-deck/issues"
+    "url": "https://github.com/bitfocus/node-infinitton-idisplay/issues"
   },
-  "homepage": "https://github.com/bitfocus/node-elgato-stream-deck/tree/infinitton-idisplay",
+  "homepage": "https://github.com/bitfocus/node-infinitton-idisplay",
   "files": [
     "*.js"
   ],
   "engines": {
-    "node": ">=7.6"
+    "node": ">=12.20"
   }
 }
