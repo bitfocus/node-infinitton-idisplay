@@ -3,6 +3,7 @@
   "version": "1.1.1",
   "description": "An npm module for interfacing with the Infinitton buttons",
   "main": "index.js",
+  "typings": "index.d.ts",
   "dependencies": {
     "node-hid": "^2.1.1"
   },
@@ -51,7 +52,8 @@
   },
   "homepage": "https://github.com/bitfocus/node-infinitton-idisplay",
   "files": [
-    "*.js"
+    "*.js",
+    "*.d.ts"
   ],
   "engines": {
     "node": ">=12.20"
