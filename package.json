@@ -1,6 +1,6 @@
 {
   "name": "infinitton-idisplay",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "An npm module for interfacing with the Infinitton buttons",
   "main": "index.js",
   "typings": "index.d.ts",
