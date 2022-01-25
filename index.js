@@ -11,7 +11,10 @@ const NUM_KEYS = 15;
 const NUM_KEYS_PER_ROW = 5;
 const PAGE_PACKET_SIZE = 8017;
 const ICON_SIZE = 72;
-const NUM_TOTAL_PIXELS = 72*72;
+const NUM_TOTAL_PIXELS = 72 * 72;
+
+const VENDOR_ID = 0xffff
+const PRODUCT_IDS = [0x1f40,0x1f41]
 
 class Infinitton extends EventEmitter {
 	/**
@@ -39,6 +42,14 @@ class Infinitton extends EventEmitter {
 	 */
 	static get NUM_KEYS_PER_ROW() {
 		return NUM_KEYS_PER_ROW;
+	}
+
+	static get VENDOR_ID() {
+		return VENDOR_ID;
+	}
+
+	static get PRODUCT_IDS() {
+		return PRODUCT_IDS;
 	}
 
 
@@ -74,7 +85,7 @@ class Infinitton extends EventEmitter {
 			// Device path not provided, will then select any connected device.
 			const devices = HID.devices();
 			const connectedInfinittons = devices.filter(device => {
-				return device.vendorId === 0xffff && device.productId === 0x1f40;
+				return device.vendorId === VENDOR_ID && PRODUCT_IDS.indexOf(device.productId) !== -1;
 			});
 			if (!connectedInfinittons.length) {
 				throw new Error('No Infinittons are connected.');
@@ -195,7 +206,7 @@ class Infinitton extends EventEmitter {
 			const rowOffset = 72 * 3 * y
 			for (let x = 0; x < 72; x++) {
 				const x2 = 72 - x - 1
-				const srcOffset = y2 * stride + offset + x2 * 3
+				const srcOffset = y * stride + offset + x2 * 3
 
 				const red = imageBuffer.readUInt8(srcOffset)
 				const green = imageBuffer.readUInt8(srcOffset + 1)

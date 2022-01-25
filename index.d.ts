@@ -5,7 +5,20 @@ declare class Infinitton extends EventEmitter {
      * The pixel size of an icon written to the Infinitton key.
      */
     static get ICON_SIZE(): number;
-   
+
+	/**
+	 * The number of keys on the panel.
+	 */
+    static get NUM_KEYS(): number;
+
+	/**
+	 * The number of keys per row on the panel.
+	 */
+    static get NUM_KEYS_PER_ROW(): number;
+    
+    static get VENDOR_ID(): number;
+    static get PRODUCT_IDS(): number[];
+           
     constructor(devicePath: string);
 
     /**
