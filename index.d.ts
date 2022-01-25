@@ -27,6 +27,13 @@ declare class Infinitton extends EventEmitter {
     fillImage(keyIndex: number, imageBuffer: Buffer): void;
 
     /**
+	 * Fills the panel with an image in a Buffer.
+	 *
+	 * @param {Buffer} imageBuffer
+	 */
+	fillPanelImage(imageBuffer: Buffer): void
+
+    /**
      * Clears the given key.
      *
      * @param {number} keyIndex The key to clear 0 - 14
@@ -44,6 +51,8 @@ declare class Infinitton extends EventEmitter {
      * @param {number} percentage The percentage brightness
      */
     setBrightness(percentage: number): void;
+
+    close(): void
 }
 
 export = Infinitton;

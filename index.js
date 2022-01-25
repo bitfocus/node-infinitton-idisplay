@@ -8,6 +8,7 @@ const HID = require('node-hid');
 HID.setDriverType('libusb');
 
 const NUM_KEYS = 15;
+const NUM_KEYS_PER_ROW = 5;
 const PAGE_PACKET_SIZE = 8017;
 const ICON_SIZE = 72;
 const NUM_TOTAL_PIXELS = 72*72;
@@ -21,6 +22,25 @@ class Infinitton extends EventEmitter {
 	static get ICON_SIZE() {
 		return ICON_SIZE;
 	}
+
+	/**
+	 * The number of keys on the panel.
+	 *
+	 * @readonly
+	 */
+	static get NUM_KEYS() {
+		return NUM_KEYS;
+	}
+
+	/**
+	 * The number of keys per row on the panel.
+	 *
+	 * @readonly
+	 */
+	static get NUM_KEYS_PER_ROW() {
+		return NUM_KEYS_PER_ROW;
+	}
+
 
 	/**
 	 * Checks a value is a valid RGB value. A number between 0 and 255.
@@ -139,13 +159,43 @@ class Infinitton extends EventEmitter {
 			throw new RangeError(`Expected image buffer of length 15552, got length ${imageBuffer.length}`);
 		}
 
+		this._fillImageInner(keyIndex, imageBuffer, 72 * 3, 0)
+
+	}
+	/**
+	 * Fills the panel with an image in a Buffer.
+	 *
+	 * @param {Buffer} imageBuffer
+	 */
+	fillPanelImage(imageBuffer) {
+		if (imageBuffer.length !== 15552 * NUM_KEYS) {
+			throw new RangeError(`Expected image buffer of length ${15552 * NUM_KEYS}, got length ${imageBuffer.length}`);
+		}
+
+		const iconSize = ICON_SIZE * 3
+		const stride = iconSize * NUM_KEYS_PER_ROW
+
+		for (let row = 0; row < NUM_KEYS / NUM_KEYS_PER_ROW; row++) {
+			const rowOffset = stride * row * this.ICON_SIZE
+
+			for (let column = 0; column < NUM_KEYS_PER_ROW; column++) {
+				const index = row * NUM_KEYS_PER_ROW + column
+
+				const colOffset = column * iconSize
+					
+				this._fillImageInner(index, imageBuffer, stride, rowOffset + colOffset)
+			}
+		}
+	}
+
+	_fillImageInner(keyIndex, imageBuffer, stride, offset) {
 		const byteBuffer = Buffer.alloc(15552)
 		
 		for (let y = 0; y < 72; y++) {
 			const rowOffset = 72 * 3 * y
 			for (let x = 0; x < 72; x++) {
 				const x2 = 72 - x - 1
-				const srcOffset = rowOffset + x2 * 3
+				const srcOffset = y2 * stride + offset + x2 * 3
 
 				const red = imageBuffer.readUInt8(srcOffset)
 				const green = imageBuffer.readUInt8(srcOffset + 1)
@@ -197,6 +247,10 @@ class Infinitton extends EventEmitter {
 
 		const brightnessCommandBuffer = Buffer.from([0x00, 0x11, percentage]);
 		this.device.sendFeatureReport(brightnessCommandBuffer);
+	}
+
+	close() {
+		this.device.close()
 	}
 
 	/**
